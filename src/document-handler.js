@@ -1,11 +1,30 @@
 const fs = require('fs');
+const fsPromises = require('fs').promises;
 const path = require('path');
+const axios = require('axios');
+const { PDFDocument } = require('pdf-lib');
 const pdfParse = require('pdf-parse');
-const Tesseract = require('tesseract.js');
-const sharp = require('sharp');
 const mammoth = require('mammoth');
+
+// Optional dependencies
+let sharp = null;
+let Tesseract = null;
+try {
+  sharp = require('sharp');
+  console.log('✅ Sharp library loaded');
+} catch (error) {
+  console.log('⚠️ Sharp library failed to load, image preprocessing will be disabled:', error.message);
+}
+
+try {
+  Tesseract = require('tesseract.js');
+  console.log('✅ Tesseract.js loaded');
+} catch (error) {
+  console.log('⚠️ Tesseract.js failed to load, OCR features will be disabled:', error.message);
+}
+
 const config = require('../config/config');
-const { logger } = require('./utils');
+const { logger, isValidDocumentFormat, isValidFileSize } = require('./utils');
 
 class DocumentHandler {
   constructor() {
@@ -325,6 +344,10 @@ class DocumentHandler {
   // Extract text from images using OCR
   async extractTextFromImage(filePath) {
     try {
+      if (!Tesseract) {
+        logger.warn('Tesseract.js not available, skipping OCR');
+        return { text: '', metadata: { confidence: 0, wordCount: 0 } };
+      }
       logger.info(`Extracting text from image: ${path.basename(filePath)}`);
       
       // Preprocess image for better OCR results
@@ -359,6 +382,10 @@ class DocumentHandler {
   // Preprocess image for better OCR results
   async preprocessImage(filePath) {
     try {
+      if (!sharp) {
+        logger.warn('Sharp library not available, skipping image preprocessing');
+        return fs.readFileSync(filePath);
+      }
       const image = sharp(filePath);
       
       // Get image metadata
