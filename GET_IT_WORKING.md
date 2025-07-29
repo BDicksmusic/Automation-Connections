@@ -17,7 +17,20 @@ This will test:
 - ✅ Transcription
 - ✅ Notion page creation
 
-## Step 2: Test Webhook Processing
+## Step 2: Test Notion Handlers
+
+Run this to verify your Notion integration is working:
+
+```bash
+node test-notion-handlers.js
+```
+
+This will test:
+- ✅ Notion API connection
+- ✅ Database access
+- ✅ Schema retrieval
+
+## Step 3: Test Webhook Processing
 
 Run this to simulate a webhook and see what files get processed:
 
@@ -30,7 +43,7 @@ This will show you:
 - Which files are considered "recent"
 - Whether files are being processed
 
-## Step 3: Deploy to Railway
+## Step 4: Deploy to Railway
 
 If the tests work locally, deploy to Railway:
 
@@ -44,7 +57,7 @@ railway init
 railway up
 ```
 
-## Step 4: Set Up Google Drive Webhook
+## Step 5: Set Up Google Drive Webhook
 
 Once deployed, set up the webhook:
 
@@ -52,11 +65,28 @@ Once deployed, set up the webhook:
 npm run setup-webhook
 ```
 
-## Step 5: Test the Full Flow
+## Step 6: Test the Full Flow
 
 1. Upload a new audio file to your Google Drive folder
 2. Check Railway logs to see if webhook is received
 3. Check your Notion database for the new page
+
+## Recent Fixes Applied
+
+### ✅ Fixed Notion Handler Issues
+- **Problem**: Notion handlers were trying to use relation fields for the 'Name' property
+- **Fix**: Updated to use simple title fields (which is what most Notion databases use)
+- **Result**: Page creation should now work correctly
+
+### ✅ Extended Time Windows
+- **Problem**: Files were being filtered out if older than 5 minutes
+- **Fix**: Extended to 30 minutes for both Google Drive and Dropbox
+- **Result**: More files will be processed
+
+### ✅ Added Better Logging
+- **Problem**: Hard to debug what files were being processed
+- **Fix**: Added detailed logging for file processing decisions
+- **Result**: You can now see exactly what's happening
 
 ## Troubleshooting
 
@@ -77,6 +107,12 @@ npm run setup-webhook
 1. **Check OpenAI API key**: Ensure it's valid and has credits
 2. **Check file size**: Files must be under 50MB
 3. **Check file format**: Ensure it's a supported audio format
+
+### If Notion page creation fails:
+
+1. **Check Notion API key**: Ensure it's valid and has permissions
+2. **Check database ID**: Ensure the database exists and is shared with your integration
+3. **Check database schema**: Run `node test-notion-handlers.js` to verify
 
 ## Quick Fixes
 

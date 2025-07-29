@@ -315,7 +315,30 @@ class NotionPDFHandler {
         };
       }
 
-      if (nameProperty.type === 'relation') {
+      // Most Notion databases use title for the Name property
+      if (nameProperty.type === 'title') {
+        return {
+          title: [
+            {
+              type: 'text',
+              text: {
+                content: title
+              }
+            }
+          ]
+        };
+      } else if (nameProperty.type === 'rich_text') {
+        return {
+          rich_text: [
+            {
+              type: 'text',
+              text: {
+                content: title
+              }
+            }
+          ]
+        };
+      } else if (nameProperty.type === 'relation') {
         // For relation fields, we need to provide relation database ID and page ID
         // You can configure these IDs in your environment variables
         const relationId = process.env.NOTION_LINK_TAGS_RELATION_ID;
@@ -342,7 +365,7 @@ class NotionPDFHandler {
           };
         }
       } else {
-        // Fallback to title if the property is not a relation
+        // Fallback to title for any other type
         return {
           title: [
             {

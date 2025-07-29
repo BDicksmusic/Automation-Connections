@@ -13,7 +13,11 @@ class DropboxHandler {
     this.appKey = config.dropbox.appKey;
     this.appSecret = config.dropbox.appSecret;
     this.webhookSecret = config.dropbox.webhookSecret;
+<<<<<<< Updated upstream
     this.audioFolderPath = config.dropbox.folderPath || '/Recordings';
+=======
+    this.audioFolderPath = config.dropbox.folderPath;
+>>>>>>> Stashed changes
     this.pdfFolderPath = config.dropbox.pdfFolderPath;
     this.recentlyProcessedFiles = new Set();
   }
@@ -105,14 +109,23 @@ class DropboxHandler {
     }
   }
 
+<<<<<<< Updated upstream
   // List all files and folders from a given path (default root)
   async listFiles(folderPath = '') {
     try {
       logger.info(`Listing all entries from Dropbox path: ${folderPath || '/'} `);
+=======
+  // List all files from Dropbox (generic method for scripts)
+  async listFiles() {
+    try {
+      logger.info('Listing all files from Dropbox root');
+      
+>>>>>>> Stashed changes
       const response = await this.makeAuthenticatedRequest({
         method: 'POST',
         url: 'https://api.dropboxapi.com/2/files/list_folder',
         data: {
+<<<<<<< Updated upstream
           path: folderPath,
           recursive: false
         }
@@ -120,6 +133,18 @@ class DropboxHandler {
       return response.data.entries || [];
     } catch (error) {
       logger.error('Failed to list entries from Dropbox:', error.response?.data || error.message);
+=======
+          path: '',
+          recursive: true
+        }
+      });
+
+      const entries = response.data.entries || [];
+      logger.info(`Found ${entries.length} total entries in Dropbox`);
+      return entries;
+    } catch (error) {
+      logger.error('Failed to list files from Dropbox:', error.response?.data || error.message);
+>>>>>>> Stashed changes
       throw error;
     }
   }
@@ -235,11 +260,15 @@ class DropboxHandler {
       
       logger.info(`Found ${documentFiles.length} document files to process`);
       
-      // Filter for recently modified files (within last 5 minutes)
-      const fiveMinutesAgo = new Date(Date.now() - 5 * 60 * 1000);
+      // Filter for recently modified files (within last 30 minutes instead of 5)
+      const thirtyMinutesAgo = new Date(Date.now() - 30 * 60 * 1000);
       const recentFiles = documentFiles.filter(file => {
         const modifiedTime = new Date(file.server_modified);
-        return modifiedTime > fiveMinutesAgo;
+        const isRecent = modifiedTime > thirtyMinutesAgo;
+        
+        logger.info(`File ${file.name}: modified ${modifiedTime.toISOString()}, recent: ${isRecent}`);
+        
+        return isRecent;
       });
 
       logger.info(`Found ${recentFiles.length} recently modified document files`);
