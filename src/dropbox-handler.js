@@ -13,6 +13,7 @@ class DropboxHandler {
     this.appKey = config.dropbox.appKey;
     this.appSecret = config.dropbox.appSecret;
     this.webhookSecret = config.dropbox.webhookSecret;
+    this.audioFolderPath = config.dropbox.folderPath || '/Recordings';
     this.pdfFolderPath = config.dropbox.pdfFolderPath;
     this.recentlyProcessedFiles = new Set();
   }
@@ -101,6 +102,25 @@ class DropboxHandler {
     } catch (error) {
       logger.error('Error verifying webhook signature:', error);
       return false;
+    }
+  }
+
+  // List all files and folders from a given path (default root)
+  async listFiles(folderPath = '') {
+    try {
+      logger.info(`Listing all entries from Dropbox path: ${folderPath || '/'} `);
+      const response = await this.makeAuthenticatedRequest({
+        method: 'POST',
+        url: 'https://api.dropboxapi.com/2/files/list_folder',
+        data: {
+          path: folderPath,
+          recursive: false
+        }
+      });
+      return response.data.entries || [];
+    } catch (error) {
+      logger.error('Failed to list entries from Dropbox:', error.response?.data || error.message);
+      throw error;
     }
   }
 
